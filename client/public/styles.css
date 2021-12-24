@@ -1,0 +1,9 @@
+.text-editor {
+  height: 500px;
+  width: 700px;
+  resize: none;
+  background: black;
+  color: white;
+  caret-color: red; 
+  font-family: 'Courier New', Courier, monospace;
+}

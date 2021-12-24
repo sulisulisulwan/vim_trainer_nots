@@ -1,8 +1,14 @@
 import React from 'react';
+import TextEditor from './TextEditor.jsx'
 
 const App = () => {
+
+
 	return (
-		<div>React is boosss:)</div>
+		<>
+			<h1>Vim trainer</h1>
+			<TextEditor editorId={'main'}/>
+		</>
 	)
 }
 
