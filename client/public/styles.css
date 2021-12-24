@@ -1,9 +1,50 @@
+main {
+  display: grid;
+  grid-template-columns: 70% 30%;
+  grid-gap: 1%;
+  
+}
+
+.text-editor-wrapper {
+  position: relative;
+}
+
 .text-editor {
-  height: 500px;
-  width: 700px;
+  border: gray 5px solid;
+  padding-top: 7px;
+  padding-left: 7px;
+  height: 100%;
+  max-height: 500px;
+  min-height: 500px;
   resize: none;
   background: black;
   color: white;
   caret-color: red; 
-  font-family: 'Courier New', Courier, monospace;
+  font-family: monospace;
+  font-size: 20px;
+  line-height: 25px;
+  z-index: 1;
+  position: relative;
+  overflow-y: scroll;
+  overflow-wrap: break-word;
+}
+
+.shadow-input {
+  position: absolute;
+  top: 0%;
+  z-index: 4;
+}
+
+.vim-tilda {
+  color: rgb(147, 66, 223);
+  font-weight: bold;
+}
+
+.control-panel-wrapper {
+  background-color: lightblue;
+  height: 100%;
+}
+
+.control-panel {
+  padding: 10px;
 }

@@ -14,16 +14,45 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var _TextEditor_jsx__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./TextEditor.jsx */ "./client/src/TextEditor.jsx");
+/* harmony import */ var _ControlPanel_jsx__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ControlPanel.jsx */ "./client/src/ControlPanel.jsx");
+
 
 
 
 var App = function App() {
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("h1", null, "Vim trainer"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(_TextEditor_jsx__WEBPACK_IMPORTED_MODULE_1__["default"], {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("header", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("h1", null, "Vim trainer")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("main", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
+    className: "text-editor-wrapper"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(_TextEditor_jsx__WEBPACK_IMPORTED_MODULE_1__["default"], {
     editorId: 'main'
-  }));
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
+    className: "control-panel-wrapper"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(_ControlPanel_jsx__WEBPACK_IMPORTED_MODULE_2__["default"], null))));
 };
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (App);
+
+/***/ }),
+
+/***/ "./client/src/ControlPanel.jsx":
+/*!*************************************!*\
+  !*** ./client/src/ControlPanel.jsx ***!
+  \*************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+
+
+var ControlPanel = function ControlPanel() {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
+    className: "control-panel"
+  }, "Control Panel");
+};
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ControlPanel);
 
 /***/ }),
 
@@ -38,6 +67,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var _tildas_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./tildas.js */ "./client/src/tildas.js");
+/* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utils.js */ "./client/src/utils.js");
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -53,60 +84,193 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 
 
+
+
 var TextEditor = function TextEditor(_ref) {
   var editorId = _ref.editorId;
-  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
-    textEditor = document.getElementById(editorId);
-    shadowTextInput = document.getElementById(editorId + '-shadow-input');
-  }, []);
-  var textEditor;
-  var shadowTextInput;
 
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
       _useState2 = _slicedToArray(_useState, 2),
-      text = _useState2[0],
-      setText = _useState2[1];
+      editorDimensions = _useState2[0],
+      setEditorDimensions = _useState2[1];
 
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0),
       _useState4 = _slicedToArray(_useState3, 2),
-      innerHtml = _useState4[0],
-      setInnerHtml = _useState4[1];
+      spaceCount = _useState4[0],
+      setSpaceCount = _useState4[1];
+
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1),
+      _useState6 = _slicedToArray(_useState5, 2),
+      lineCount = _useState6[0],
+      setLineCount = _useState6[1];
+
+  var textEditor = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+  var shadowTextInput = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    textEditor.current.innerHTML = _tildas_js__WEBPACK_IMPORTED_MODULE_1__["default"];
+    window.addEventListener('resize', function () {
+      setEditorDimensions({
+        height: textEditor.current.clientHeight,
+        width: textEditor.current.clientWidth
+      });
+    }, false);
+  }, []);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {}, [lineCount]);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    var value = shadowTextInput.current.value;
+    var _textEditor$current = textEditor.current,
+        clientWidth = _textEditor$current.clientWidth,
+        clientHeight = _textEditor$current.clientHeight;
+    var newLineCount = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.getLineCount)(value, clientWidth);
+    textEditor.current.innerHTML = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.generateNewInnerHtml)(value, newLineCount, clientHeight);
+  }, [editorDimensions]);
 
   var editorOnClick = function editorOnClick(e) {
+    var shadowTextInput = document.getElementById("".concat(editorId, "-shadow-input"));
     shadowTextInput.focus();
   };
 
   var textInputOnKeyDown = function textInputOnKeyDown(e) {
     if (e.code === 'Tab') {
       e.preventDefault();
-      var newInnerHtml = e.target.value + '  ';
-      shadowTextInput.value = newInnerHtml;
+      var textWithTab = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowTextInput, '  ');
+      (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.updateShadowAndTextEditor)(textWithTab, 2, shadowTextInput, textEditor);
+      return;
+    } else if (e.code === 'Space') {
+      setSpaceCount(spaceCount + 1);
+      return;
+    }
+
+    if (spaceCount) {
+      setSpaceCount(0);
     }
   };
 
   var textInputOnChange = function textInputOnChange(e) {
-    var newestText = e.target.value;
-    var newInnerHtml = '';
+    if (spaceCount >= 1) {
+      var targetIndex = shadowTextInput.current.selectionEnd - 2;
 
-    for (var i = 0; i < newestText.length; i++) {
-      newestText[i] === '\n' ? newInnerHtml += '<br>' : newestText[i] === ' ' ? newInnerHtml += '&nbsp;' : newInnerHtml += newestText[i];
+      if (shadowTextInput.current.value[targetIndex] === '.') {
+        shadowTextInput.current.value = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.replaceWithSpaceAtIdx)(shadowTextInput.current.value, targetIndex);
+      }
     }
 
-    textEditor.innerHTML = newInnerHtml;
+    var value = shadowTextInput.current.value;
+    var _textEditor$current2 = textEditor.current,
+        clientWidth = _textEditor$current2.clientWidth,
+        clientHeight = _textEditor$current2.clientHeight;
+    var newLineCount = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.getLineCount)(value, clientWidth);
+    textEditor.current.innerHTML = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.generateNewInnerHtml)(e.target.value, newLineCount, clientHeight);
   };
 
+  console.dir(editorDimensions);
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
     id: editorId,
+    ref: textEditor,
     className: "text-editor",
     onClick: editorOnClick
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("textarea", {
     id: "".concat(editorId, "-shadow-input"),
+    ref: shadowTextInput,
+    className: "shadow-input",
     onKeyDown: textInputOnKeyDown,
-    onChange: textInputOnChange
+    onChange: textInputOnChange,
+    spellCheck: false,
+    autoCorrect: "off",
+    autoCapitalize: "off"
   }));
 };
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (TextEditor);
+
+/***/ }),
+
+/***/ "./client/src/tildas.js":
+/*!******************************!*\
+  !*** ./client/src/tildas.js ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+var tildas = "\n<br/><span className=\"vim-tilda\">~</span>\n";
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (tildas);
+
+/***/ }),
+
+/***/ "./client/src/utils.js":
+/*!*****************************!*\
+  !*** ./client/src/utils.js ***!
+  \*****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "replaceWithSpaceAtIdx": () => (/* binding */ replaceWithSpaceAtIdx),
+/* harmony export */   "generateTildas": () => (/* binding */ generateTildas),
+/* harmony export */   "generateNewInnerHtml": () => (/* binding */ generateNewInnerHtml),
+/* harmony export */   "getLineCount": () => (/* binding */ getLineCount),
+/* harmony export */   "insertAtIdx": () => (/* binding */ insertAtIdx),
+/* harmony export */   "updateShadowAndTextEditor": () => (/* binding */ updateShadowAndTextEditor)
+/* harmony export */ });
+var replaceWithSpaceAtIdx = function replaceWithSpaceAtIdx(string, index) {
+  var firstString = string.substring(0, index);
+  var secondString = string.substring(index + 1);
+  return firstString + ' ' + secondString;
+};
+
+var insertAtIdx = function insertAtIdx(inputRef, insert) {
+  var string = inputRef.current.value;
+  var index = inputRef.current.selectionEnd;
+  var firstString = string.substring(0, index);
+  var secondString = string.substring(index);
+  return firstString + insert + secondString;
+};
+
+var updateShadowAndTextEditor = function updateShadowAndTextEditor(newText, cursorOffset, shadowRef, textEditorRef) {
+  var targetIndex = shadowRef.current.selectionEnd;
+  shadowRef.current.value = newText;
+  var _textEditorRef$curren = textEditorRef.current,
+      clientWidth = _textEditorRef$curren.clientWidth,
+      clientHeight = _textEditorRef$curren.clientHeight;
+  var newLineCount = getLineCount(newText, clientWidth);
+  textEditorRef.current.innerHTML = generateNewInnerHtml(newText, newLineCount, clientHeight);
+  console.log(targetIndex);
+  shadowRef.current.selectionEnd = targetIndex + cursorOffset;
+  console.log(shadowRef.current.selectionEnd);
+};
+
+var generateTildas = function generateTildas(lineCount, currentHeight, lineHeight) {
+  var tilda = "\n  <br/><span className=\"vim-tilda\">~</span>\n  ";
+  var tildas = '';
+  var tildaAmount = currentHeight / lineHeight - lineCount;
+
+  for (var i = 0; i < tildaAmount - 1; i += 1) {
+    tildas += tilda;
+  }
+
+  return tildas;
+};
+
+var getLineCount = function getLineCount(text, textEditorWidth) {
+  var length = text.length === 0 ? 1 : text.length;
+  return Math.ceil(12.3 * length / textEditorWidth);
+};
+
+var generateNewInnerHtml = function generateNewInnerHtml(newestText, lineCount, textEditorHeight) {
+  var newHtml = '';
+
+  for (var i = 0; i < newestText.length; i++) {
+    newestText[i] === '\n' ? newHtml += '<br>' : newestText[i] === ' ' ? newHtml += '&nbsp;' : newHtml += newestText[i];
+  }
+
+  var tildas = generateTildas(lineCount, textEditorHeight, 25);
+  return newHtml += tildas;
+};
+
+
 
 /***/ }),
 
