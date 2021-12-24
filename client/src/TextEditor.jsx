@@ -21,10 +21,10 @@ const TextEditor = ({ editorId }) => {
   }, [])
 
   useEffect(() => {
-    const { value } = shadowTextInput.current;
+    const { value, selectionEnd } = shadowTextInput.current;
     const { clientWidth, clientHeight } = textEditor.current;
     const newLineCount = getLineCount(value, clientWidth)
-    textEditor.current.innerHTML = generateNewInnerHtml(value, newLineCount, clientHeight)
+    textEditor.current.innerHTML = generateNewInnerHtml(value, newLineCount, clientHeight, selectionEnd)
   }, [editorDimensions])
 
 

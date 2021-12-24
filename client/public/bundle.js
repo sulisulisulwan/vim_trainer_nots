@@ -116,12 +116,14 @@ var TextEditor = function TextEditor(_ref) {
     }, false);
   }, []);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
-    var value = shadowTextInput.current.value;
+    var _shadowTextInput$curr = shadowTextInput.current,
+        value = _shadowTextInput$curr.value,
+        selectionEnd = _shadowTextInput$curr.selectionEnd;
     var _textEditor$current = textEditor.current,
         clientWidth = _textEditor$current.clientWidth,
         clientHeight = _textEditor$current.clientHeight;
     var newLineCount = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.getLineCount)(value, clientWidth);
-    textEditor.current.innerHTML = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.generateNewInnerHtml)(value, newLineCount, clientHeight);
+    textEditor.current.innerHTML = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.generateNewInnerHtml)(value, newLineCount, clientHeight, selectionEnd);
   }, [editorDimensions]);
 
   var editorOnClick = function editorOnClick(e) {
@@ -236,7 +238,7 @@ var updateShadowAndTextEditor = function updateShadowAndTextEditor(newText, curs
       clientWidth = _textEditorRef$curren.clientWidth,
       clientHeight = _textEditorRef$curren.clientHeight;
   var newLineCount = getLineCount(newText, clientWidth);
-  textEditorRef.current.innerHTML = generateNewInnerHtml(newText, newLineCount, clientHeight);
+  textEditorRef.current.innerHTML = generateNewInnerHtml(newText, newLineCount, clientHeight, targetIndex + cursorOffset);
   shadowRef.current.selectionEnd = targetIndex + cursorOffset;
 };
 
@@ -253,15 +255,20 @@ var generateTildas = function generateTildas(lineCount, currentHeight, lineHeigh
 };
 
 var getLineCount = function getLineCount(text, textEditorWidth) {
-  var length = text.length === 0 ? 1 : text.length;
-  return Math.ceil(12.3 * length / textEditorWidth);
+  var cpl = Math.floor(textEditorWidth / (20 / 1.64));
+  var charCount = text.length === 0 ? 1 : text.length;
+  return Math.ceil(charCount / cpl);
 };
 
-var generateNewInnerHtml = function generateNewInnerHtml(newestText, lineCount, textEditorHeight) {
+var generateNewInnerHtml = function generateNewInnerHtml(newestText, lineCount, textEditorHeight, caretPosition) {
   var newHtml = '';
 
   for (var i = 0; i < newestText.length; i++) {
-    newestText[i] === '\n' ? newHtml += '<br>' : newestText[i] === ' ' ? newHtml += '&nbsp;' : newHtml += newestText[i];
+    i === caretPosition ? newHtml += "<span class=\"caret\">".concat(newestText[i], "</span>") : newestText[i] === '\n' ? newHtml += '<br>' : newestText[i] === ' ' ? newHtml += '&nbsp;' : newHtml += newestText[i];
+  }
+
+  if (caretPosition === newestText.length) {
+    newHtml += "<span class=\"caret\">&nbsp;</span>";
   }
 
   var tildas = generateTildas(lineCount, textEditorHeight, 25);

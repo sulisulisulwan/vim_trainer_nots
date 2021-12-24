@@ -18,7 +18,7 @@ const updateShadowAndTextEditor = (newText, cursorOffset, shadowRef, textEditorR
   shadowRef.current.value = newText;
   const { clientWidth, clientHeight } = textEditorRef.current;
   const newLineCount = getLineCount(newText, clientWidth)
-  textEditorRef.current.innerHTML = generateNewInnerHtml(newText, newLineCount, clientHeight)
+  textEditorRef.current.innerHTML = generateNewInnerHtml(newText, newLineCount, clientHeight, targetIndex + cursorOffset)
   shadowRef.current.selectionEnd = targetIndex + cursorOffset;
 }
 
@@ -36,16 +36,21 @@ const generateTildas = (lineCount, currentHeight, lineHeight) => {
 }
 
 const getLineCount = (text, textEditorWidth) => {
-  let length = text.length === 0 ? 1 : text.length;
-  return Math.ceil((12.3 * length)/textEditorWidth);
+  let cpl = Math.floor(textEditorWidth / (20 / 1.64))
+  let charCount = text.length === 0 ? 1 : text.length;
+  return Math.ceil(charCount / cpl)
 }
 
-const generateNewInnerHtml = (newestText, lineCount, textEditorHeight) => {
+const generateNewInnerHtml = (newestText, lineCount, textEditorHeight, caretPosition) => {
   let newHtml = '';
   for (let i = 0; i < newestText.length; i++) {
-    newestText[i] === '\n' ? newHtml += '<br>'
+    i === caretPosition ? newHtml += `<span class="caret">${newestText[i]}</span>`
+      : newestText[i] === '\n' ? newHtml += '<br>'
       : newestText[i] === ' ' ? newHtml += '&nbsp;'
       : newHtml += newestText[i];
+  }
+  if (caretPosition === newestText.length) {
+    newHtml += `<span class="caret">&nbsp;</span>`;
   }
   let tildas = generateTildas(lineCount, textEditorHeight, 25)
   return newHtml += tildas;
