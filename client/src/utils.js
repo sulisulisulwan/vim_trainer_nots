@@ -1,4 +1,5 @@
-const replaceWithSpaceAtIdx = (string, index) => {
+const replaceWithSpaceAtIdx = (inputRef, index) => {
+  let string = inputRef.current.value;
   let firstString = string.substring(0, index)
   let secondString = string.substring(index + 1)
   return firstString + ' ' + secondString;
@@ -18,9 +19,7 @@ const updateShadowAndTextEditor = (newText, cursorOffset, shadowRef, textEditorR
   const { clientWidth, clientHeight } = textEditorRef.current;
   const newLineCount = getLineCount(newText, clientWidth)
   textEditorRef.current.innerHTML = generateNewInnerHtml(newText, newLineCount, clientHeight)
-  console.log(targetIndex)
   shadowRef.current.selectionEnd = targetIndex + cursorOffset;
-  console.log(shadowRef.current.selectionEnd)
 }
 
 

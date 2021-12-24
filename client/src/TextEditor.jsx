@@ -4,9 +4,9 @@ import tildas from './tildas.js';
 import { replaceWithSpaceAtIdx, generateNewInnerHtml, getLineCount, insertAtIdx, updateShadowAndTextEditor } from './utils.js'
 const TextEditor = ({ editorId }) => {
 
-  const [editorDimensions, setEditorDimensions] = useState(null)
+  const [editorDimensions, setEditorDimensions] = useState(null);
   const [spaceCount, setSpaceCount] = useState(0);
-  const [lineCount, setLineCount] = useState(1);
+  const [twoCharsBefore, setTwoCharsBefore] = useState('');
   const textEditor = useRef(null)
   const shadowTextInput = useRef(null)
 
@@ -21,9 +21,6 @@ const TextEditor = ({ editorId }) => {
   }, [])
 
   useEffect(() => {
-  }, [lineCount])
-
-  useEffect(() => {
     const { value } = shadowTextInput.current;
     const { clientWidth, clientHeight } = textEditor.current;
     const newLineCount = getLineCount(value, clientWidth)
@@ -36,16 +33,19 @@ const TextEditor = ({ editorId }) => {
     shadowTextInput.focus()
   }
 
-  const textInputOnKeyDown = (e) => {
+  const handleSpecialKeys = (e) => {
+    let targetIndex = shadowTextInput.current.selectionEnd - 1;
+    setTwoCharsBefore(shadowTextInput.current.value[targetIndex])
+
     if (e.code === 'Tab') {
       e.preventDefault();
       const textWithTab = insertAtIdx(shadowTextInput,'  ')
       updateShadowAndTextEditor(textWithTab, 2, shadowTextInput, textEditor)
-      return;
-    } else if (e.code === 'Space') {
+    }
+    if (e.code === 'Space') {
       setSpaceCount(spaceCount + 1)
       return;
-    } 
+    }
     if (spaceCount) {
       setSpaceCount(0)
     }
@@ -53,19 +53,15 @@ const TextEditor = ({ editorId }) => {
 
 
   const textInputOnChange = (e) => { 
-    if (spaceCount >= 1) {
+    let newText = shadowTextInput.current.value;
+    if (spaceCount >= 1 && twoCharsBefore !== '.') {
       let targetIndex = shadowTextInput.current.selectionEnd - 2;
       if (shadowTextInput.current.value[targetIndex] === '.') {
-        shadowTextInput.current.value = replaceWithSpaceAtIdx(shadowTextInput.current.value, targetIndex)
+        newText = replaceWithSpaceAtIdx(shadowTextInput, targetIndex)
       }
     }
-    const { value } = shadowTextInput.current;
-    const { clientWidth, clientHeight } = textEditor.current;
-    const newLineCount = getLineCount(value, clientWidth)
-    textEditor.current.innerHTML = generateNewInnerHtml(e.target.value, newLineCount, clientHeight)
+    updateShadowAndTextEditor(newText, 0, shadowTextInput, textEditor)
   }
-
-  console.dir(editorDimensions) 
 
   return (
     <>
@@ -74,7 +70,7 @@ const TextEditor = ({ editorId }) => {
         id={`${editorId}-shadow-input`} 
         ref={shadowTextInput}
         className={"shadow-input"}
-        onKeyDown={textInputOnKeyDown} 
+        onKeyDown={handleSpecialKeys} 
         onChange={textInputOnChange}
         spellCheck={false}
         autoCorrect='off'

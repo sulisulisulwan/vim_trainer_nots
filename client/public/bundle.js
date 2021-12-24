@@ -99,10 +99,10 @@ var TextEditor = function TextEditor(_ref) {
       spaceCount = _useState4[0],
       setSpaceCount = _useState4[1];
 
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(1),
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
       _useState6 = _slicedToArray(_useState5, 2),
-      lineCount = _useState6[0],
-      setLineCount = _useState6[1];
+      twoCharsBefore = _useState6[0],
+      setTwoCharsBefore = _useState6[1];
 
   var textEditor = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var shadowTextInput = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
@@ -115,7 +115,6 @@ var TextEditor = function TextEditor(_ref) {
       });
     }, false);
   }, []);
-  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {}, [lineCount]);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     var value = shadowTextInput.current.value;
     var _textEditor$current = textEditor.current,
@@ -130,13 +129,17 @@ var TextEditor = function TextEditor(_ref) {
     shadowTextInput.focus();
   };
 
-  var textInputOnKeyDown = function textInputOnKeyDown(e) {
+  var handleSpecialKeys = function handleSpecialKeys(e) {
+    var targetIndex = shadowTextInput.current.selectionEnd - 1;
+    setTwoCharsBefore(shadowTextInput.current.value[targetIndex]);
+
     if (e.code === 'Tab') {
       e.preventDefault();
       var textWithTab = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowTextInput, '  ');
       (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.updateShadowAndTextEditor)(textWithTab, 2, shadowTextInput, textEditor);
-      return;
-    } else if (e.code === 'Space') {
+    }
+
+    if (e.code === 'Space') {
       setSpaceCount(spaceCount + 1);
       return;
     }
@@ -147,23 +150,19 @@ var TextEditor = function TextEditor(_ref) {
   };
 
   var textInputOnChange = function textInputOnChange(e) {
-    if (spaceCount >= 1) {
+    var newText = shadowTextInput.current.value;
+
+    if (spaceCount >= 1 && twoCharsBefore !== '.') {
       var targetIndex = shadowTextInput.current.selectionEnd - 2;
 
       if (shadowTextInput.current.value[targetIndex] === '.') {
-        shadowTextInput.current.value = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.replaceWithSpaceAtIdx)(shadowTextInput.current.value, targetIndex);
+        newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.replaceWithSpaceAtIdx)(shadowTextInput, targetIndex);
       }
     }
 
-    var value = shadowTextInput.current.value;
-    var _textEditor$current2 = textEditor.current,
-        clientWidth = _textEditor$current2.clientWidth,
-        clientHeight = _textEditor$current2.clientHeight;
-    var newLineCount = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.getLineCount)(value, clientWidth);
-    textEditor.current.innerHTML = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.generateNewInnerHtml)(e.target.value, newLineCount, clientHeight);
+    (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.updateShadowAndTextEditor)(newText, 0, shadowTextInput, textEditor);
   };
 
-  console.dir(editorDimensions);
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
     id: editorId,
     ref: textEditor,
@@ -173,7 +172,7 @@ var TextEditor = function TextEditor(_ref) {
     id: "".concat(editorId, "-shadow-input"),
     ref: shadowTextInput,
     className: "shadow-input",
-    onKeyDown: textInputOnKeyDown,
+    onKeyDown: handleSpecialKeys,
     onChange: textInputOnChange,
     spellCheck: false,
     autoCorrect: "off",
@@ -215,7 +214,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "insertAtIdx": () => (/* binding */ insertAtIdx),
 /* harmony export */   "updateShadowAndTextEditor": () => (/* binding */ updateShadowAndTextEditor)
 /* harmony export */ });
-var replaceWithSpaceAtIdx = function replaceWithSpaceAtIdx(string, index) {
+var replaceWithSpaceAtIdx = function replaceWithSpaceAtIdx(inputRef, index) {
+  var string = inputRef.current.value;
   var firstString = string.substring(0, index);
   var secondString = string.substring(index + 1);
   return firstString + ' ' + secondString;
@@ -237,9 +237,7 @@ var updateShadowAndTextEditor = function updateShadowAndTextEditor(newText, curs
       clientHeight = _textEditorRef$curren.clientHeight;
   var newLineCount = getLineCount(newText, clientWidth);
   textEditorRef.current.innerHTML = generateNewInnerHtml(newText, newLineCount, clientHeight);
-  console.log(targetIndex);
   shadowRef.current.selectionEnd = targetIndex + cursorOffset;
-  console.log(shadowRef.current.selectionEnd);
 };
 
 var generateTildas = function generateTildas(lineCount, currentHeight, lineHeight) {
