@@ -69,6 +69,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var _tildas_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./tildas.js */ "./client/src/tildas.js");
 /* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utils.js */ "./client/src/utils.js");
+/* harmony import */ var _cliMode_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./cliMode.js */ "./client/src/cliMode.js");
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -86,36 +87,54 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 
 
+
 var TextEditor = function TextEditor(_ref) {
   var editorId = _ref.editorId;
 
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
       _useState2 = _slicedToArray(_useState, 2),
-      keyStrokeHist = _useState2[0],
-      setKeyStrokeHist = _useState2[1];
+      textEditorActive = _useState2[0],
+      setTextEditorActive = _useState2[1];
 
   var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
       _useState4 = _slicedToArray(_useState3, 2),
-      spacedNextToPeriod = _useState4[0],
-      setSpacedNextToPeriod = _useState4[1];
+      insertMode = _useState4[0],
+      setInsertMode = _useState4[1];
 
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
       _useState6 = _slicedToArray(_useState5, 2),
-      editorDimensions = _useState6[0],
-      setEditorDimensions = _useState6[1];
+      cliMode = _useState6[0],
+      setCLIMode = _useState6[1];
 
-  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0),
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
       _useState8 = _slicedToArray(_useState7, 2),
-      spaceCount = _useState8[0],
-      setSpaceCount = _useState8[1];
+      keyStrokeHist = _useState8[0],
+      setKeyStrokeHist = _useState8[1];
 
-  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
       _useState10 = _slicedToArray(_useState9, 2),
-      twoCharsBefore = _useState10[0],
-      setTwoCharsBefore = _useState10[1];
+      spacedNextToPeriod = _useState10[0],
+      setSpacedNextToPeriod = _useState10[1];
+
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+      _useState12 = _slicedToArray(_useState11, 2),
+      editorDimensions = _useState12[0],
+      setEditorDimensions = _useState12[1];
+
+  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0),
+      _useState14 = _slicedToArray(_useState13, 2),
+      spaceCount = _useState14[0],
+      setSpaceCount = _useState14[1];
+
+  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+      _useState16 = _slicedToArray(_useState15, 2),
+      twoCharsBefore = _useState16[0],
+      setTwoCharsBefore = _useState16[1];
 
   var textEditor = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+  var textEditorCLI = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var shadowTextInput = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
+  var shadowCLI = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     textEditor.current.innerHTML = _tildas_js__WEBPACK_IMPORTED_MODULE_1__["default"];
     window.addEventListener('resize', function () {
@@ -138,8 +157,11 @@ var TextEditor = function TextEditor(_ref) {
   }, [editorDimensions]);
 
   var editorOnClick = function editorOnClick(e) {
+    setTextEditorActive(true);
+    console.log('clicked');
     var shadowTextInput = document.getElementById("".concat(editorId, "-shadow-input"));
-    shadowTextInput.focus();
+    var shadowCLI = document.getElementById("".concat(editorId, "-shadow-cli"));
+    cliMode ? shadowCLI.focus() : shadowTextInput.focus();
   };
 
   var handleSpecialKeys = function handleSpecialKeys(e) {
@@ -153,64 +175,110 @@ var TextEditor = function TextEditor(_ref) {
       textEditorRef: textEditor
     };
 
-    if (e.code === 'Space') {
-      setSpaceCount(spaceCount + 1);
-      changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowTextInput, e.key);
-      changes.visualCaretPosition += 1;
-
-      if (changes.newText[changes.caretPosition - 1] === '.') {
-        setSpacedNextToPeriod(true);
+    if (insertMode) {
+      if (e.code === 'Escape') {
+        e.preventDefault();
+        shadowCLI.current.value = '';
+        setInsertMode(false);
       }
 
-      if (spaceCount >= 1 && twoCharsBefore !== '.' && !spacedNextToPeriod) {
-        var _targetIndex = shadowTextInput.current.selectionEnd - 2;
+      if (e.code === 'Space') {
+        setSpaceCount(spaceCount + 1);
+        changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowTextInput, e.key);
+        changes.visualCaretPosition += 1;
 
-        if (shadowTextInput.current.value[_targetIndex] === '.') {
-          changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.replaceWithSpaceAtIdx)(shadowTextInput, _targetIndex);
-          changes.visualCaretPosition -= 1;
-          shadowTextInput.current.value = changes.newText;
+        if (changes.newText[changes.caretPosition - 1] === '.') {
+          setSpacedNextToPeriod(true);
+        }
+
+        if (spaceCount >= 1 && twoCharsBefore !== '.' && !spacedNextToPeriod) {
+          var _targetIndex = shadowTextInput.current.selectionEnd - 2;
+
+          if (shadowTextInput.current.value[_targetIndex] === '.') {
+            changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.replaceWithSpaceAtIdx)(shadowTextInput, _targetIndex);
+            changes.visualCaretPosition -= 1;
+            shadowTextInput.current.value = changes.newText;
+          }
+        }
+
+        (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.updateShadowAndTextEditor)(changes);
+        return;
+      } else if (e.code === 'ArrowLeft') {
+        if (shadowTextInput.current.selectionEnd === 0) {
+          return;
+        }
+
+        changes.visualCaretPosition -= 1;
+      } else if (e.code === 'ArrowRight') {
+        if (shadowTextInput.current.selectionEnd === shadowTextInput.current.value.length) {
+          return;
+        }
+
+        changes.visualCaretPosition += 1;
+      } else if (e.code === 'Tab') {
+        e.preventDefault();
+        changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowTextInput, '  ');
+        changes.caretPosition += 2;
+        changes.visualCaretPosition += 2;
+      } else if (e.code === 'Enter') {
+        changes.newText += '\n';
+        changes.visualCaretPosition += 1;
+      } else if (e.code === 'Backspace') {
+        if (shadowTextInput.current.selectionEnd === 0) {
+          return;
+        }
+
+        changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.deleteAtIdx)(shadowTextInput);
+        changes.visualCaretPosition -= 1;
+      } else {
+        if (e.key.length === 1) {
+          changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowTextInput, e.key);
+          changes.visualCaretPosition += 1;
         }
       }
 
-      (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.updateShadowAndTextEditor)(changes);
-      return;
-    } else if (e.code === 'ArrowLeft') {
-      if (shadowTextInput.current.selectionEnd === 0) {
-        return;
-      }
-
-      changes.visualCaretPosition -= 1;
-    } else if (e.code === 'ArrowRight') {
-      if (shadowTextInput.current.selectionEnd === shadowTextInput.current.value.length) {
-        return;
-      }
-
-      changes.visualCaretPosition += 1;
-    } else if (e.code === 'Tab') {
-      e.preventDefault();
-      changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowTextInput, '  ');
-      changes.caretPosition += 2;
-      changes.visualCaretPosition += 2;
-    } else if (e.code === 'Enter') {
-      changes.newText += '\n';
-      changes.visualCaretPosition += 1;
-    } else if (e.code === 'Backspace') {
-      if (shadowTextInput.current.selectionEnd === 0) {
-        return;
-      }
-
-      changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.deleteAtIdx)(shadowTextInput);
-      changes.visualCaretPosition -= 1;
-    } else {
-      if (e.key.length === 1) {
-        changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowTextInput, e.key);
-        changes.visualCaretPosition += 1;
+      if (spaceCount) {
+        setSpacedNextToPeriod(false);
+        setSpaceCount(0);
       }
     }
 
-    if (spaceCount) {
-      setSpacedNextToPeriod(false);
-      setSpaceCount(0);
+    if (!insertMode) {
+      if (!cliMode) {
+        if (e.key === 'i') {
+          e.preventDefault();
+          setInsertMode(true);
+          shadowCLI.current.value = '{ INSERT }';
+          return;
+        }
+
+        if (e.key === ':') {
+          document.getElementById("".concat(editorId, "-shadow-cli")).focus();
+          setCLIMode(true);
+          (0,_cliMode_js__WEBPACK_IMPORTED_MODULE_3__.updateCLIShadowAndTextEditor)({
+            visualCaretPosition: shadowCLI.current.selectionEnd + 1,
+            caretPosition: shadowCLI.current.selectionEnd,
+            newText: ':',
+            shadowRef: shadowCLI,
+            textEditorRef: textEditorCLI
+          });
+          return;
+        }
+
+        if (e.code === 'ArrowLeft') {
+          if (shadowTextInput.current.selectionEnd === 0) {
+            return;
+          }
+
+          changes.visualCaretPosition -= 1;
+        } else if (e.code === 'ArrowRight') {
+          if (shadowTextInput.current.selectionEnd === shadowTextInput.current.value.length) {
+            return;
+          }
+
+          changes.visualCaretPosition += 1;
+        }
+      }
     }
 
     var targetIndex = shadowTextInput.current.selectionEnd - 1;
@@ -219,12 +287,107 @@ var TextEditor = function TextEditor(_ref) {
     return;
   };
 
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
-    id: editorId,
-    ref: textEditor,
-    className: "text-editor",
-    onClick: editorOnClick
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("textarea", {
+  var handleCLIKeystrokes = function handleCLIKeystrokes(e) {
+    var changes = {
+      visualCaretPosition: shadowCLI.current.selectionEnd,
+      caretPosition: shadowCLI.current.selectionEnd,
+      newText: shadowCLI.current.value,
+      shadowRef: shadowCLI,
+      textEditorRef: textEditorCLI
+    }; //the cursor is not allowed to move on top of the colon
+    //the cursor is not allowed to delete the colon UNLESS
+    //there are no characters to the right of the colon
+    //once the cursor deletes the colon, cliMode is false and insertMode is still false
+    //
+
+    if (cliMode) {
+      if (e.code === 'Space') {
+        setSpaceCount(spaceCount + 1);
+        changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowCLI, e.key);
+        changes.visualCaretPosition += 1;
+
+        if (changes.newText[changes.caretPosition - 1] === '.') {
+          setSpacedNextToPeriod(true);
+        }
+
+        if (spaceCount >= 1 && twoCharsBefore !== '.' && !spacedNextToPeriod) {
+          var _targetIndex2 = shadowCLI.current.selectionEnd - 2;
+
+          if (shadowCLI.current.value[_targetIndex2] === '.') {
+            changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.replaceWithSpaceAtIdx)(shadowCLI, _targetIndex2);
+            changes.visualCaretPosition -= 1;
+            shadowCLI.current.value = changes.newText;
+          }
+        }
+      } else if (e.code === 'ArrowLeft') {
+        if (shadowCLI.current.selectionEnd === 1) {
+          e.preventDefault();
+          return;
+        }
+
+        changes.visualCaretPosition -= 1;
+      } else if (e.code === 'ArrowRight') {
+        if (shadowCLI.current.selectionEnd === shadowCLI.current.value.length) {
+          return;
+        }
+
+        changes.visualCaretPosition += 1;
+      } else if (e.code === 'Tab') {
+        e.preventDefault();
+        changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowCLI, '  ');
+        changes.caretPosition += 2;
+        changes.visualCaretPosition += 2;
+      } else if (e.code === 'Enter') {
+        changes.newText += '\n';
+        changes.visualCaretPosition += 1;
+      } else if (e.code === 'Backspace') {
+        if (shadowCLI.current.selectionEnd === 1) {
+          if (shadowCLI.current.value.length === 1) {
+            setCLIMode(false);
+            shadowCLI.current.value = '';
+            (0,_cliMode_js__WEBPACK_IMPORTED_MODULE_3__.updateCLIShadowAndTextEditor)({
+              visualCaretPosition: -1,
+              caretPosition: 0,
+              newText: '',
+              shadowRef: shadowCLI,
+              textEditorRef: textEditorCLI
+            });
+            document.getElementById("".concat(editorId, "-shadow-cli")).blur();
+            document.getElementById("".concat(editorId, "-shadow-input")).focus();
+            return;
+          } else {
+            console.log(shadowCLI.current.value);
+            shadowCLI.current.value = ':' + shadowCLI.current.value;
+            shadowCLI.current.selectionEnd = 2;
+            return;
+          }
+        }
+
+        changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.deleteAtIdx)(shadowCLI);
+        changes.visualCaretPosition -= 1;
+      } else {
+        if (e.key.length === 1) {
+          changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowCLI, e.key);
+          changes.visualCaretPosition += 1;
+        }
+      }
+
+      if (spaceCount) {
+        setSpacedNextToPeriod(false);
+        setSpaceCount(0);
+      }
+
+      (0,_cliMode_js__WEBPACK_IMPORTED_MODULE_3__.updateCLIShadowAndTextEditor)(changes);
+      return;
+    }
+
+    var targetIndex = shadowCLI.current.selectionEnd - 1;
+    setTwoCharsBefore(shadowCLI.current.value[targetIndex]);
+    (0,_cliMode_js__WEBPACK_IMPORTED_MODULE_3__.updateCLIShadowAndTextEditor)(changes);
+    return;
+  };
+
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("textarea", {
     id: "".concat(editorId, "-shadow-input"),
     ref: shadowTextInput,
     className: "shadow-input",
@@ -232,11 +395,89 @@ var TextEditor = function TextEditor(_ref) {
     spellCheck: false,
     autoCorrect: "off",
     autoCapitalize: "off",
-    wrap: "off"
-  }));
+    wrap: "off",
+    readOnly: !insertMode
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("textarea", {
+    id: "".concat(editorId, "-shadow-cli"),
+    ref: shadowCLI,
+    className: "shadow-CLI",
+    onKeyDown: handleCLIKeystrokes,
+    spellCheck: false,
+    autoCorrect: "off",
+    autoCapitalize: "off",
+    wrap: "off",
+    readOnly: !cliMode
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
+    id: editorId,
+    ref: textEditor,
+    className: "text-editor",
+    onClick: editorOnClick
+  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
+    id: "".concat(editorId, "-cli"),
+    ref: textEditorCLI,
+    className: "text-editor-cli"
+  }), textEditorActive ? 'Vim editor active' : 'Inactive');
 };
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (TextEditor);
+
+/***/ }),
+
+/***/ "./client/src/cliMode.js":
+/*!*******************************!*\
+  !*** ./client/src/cliMode.js ***!
+  \*******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "generateCLIInnerHtml": () => (/* binding */ generateCLIInnerHtml),
+/* harmony export */   "updateCLIShadowAndTextEditor": () => (/* binding */ updateCLIShadowAndTextEditor)
+/* harmony export */ });
+var updateCLIShadowAndTextEditor = function updateCLIShadowAndTextEditor(_ref) {
+  var visualCaretPosition = _ref.visualCaretPosition,
+      caretPosition = _ref.caretPosition,
+      newText = _ref.newText,
+      shadowRef = _ref.shadowRef,
+      textEditorRef = _ref.textEditorRef;
+  textEditorRef.current.innerHTML = generateCLIInnerHtml(newText, visualCaretPosition);
+  shadowRef.current.selectionEnd = caretPosition;
+};
+
+var generateCLIInnerHtml = function generateCLIInnerHtml(newestText, visualCaretPosition) {
+  var newHTML = '';
+
+  for (var i = 0; i < newestText.length; i++) {
+    if (i === visualCaretPosition) {
+      newestText[i] === ' ' ? newHTML += "<span class=\"caret\">&nbsp;</span>" : newHTML += "<span class=\"caret\">".concat(newestText[i], "</span>");
+    } else {
+      switch (newestText[i]) {
+        case '<':
+          newHTML += '&lt';
+          break;
+
+        case '>':
+          newHTML += '&gt';
+          break;
+
+        case ' ':
+          newHTML += '&nbsp;';
+          break;
+
+        default:
+          newHTML += newestText[i];
+      }
+    }
+  }
+
+  if (visualCaretPosition === newestText.length) {
+    newHTML += "<span class=\"caret\">&nbsp;</span>";
+  }
+
+  return newHTML;
+};
+
+
 
 /***/ }),
 
@@ -271,17 +512,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "insertAtIdx": () => (/* binding */ insertAtIdx),
 /* harmony export */   "updateShadowAndTextEditor": () => (/* binding */ updateShadowAndTextEditor)
 /* harmony export */ });
-var replaceWithSpaceAtIdx = function replaceWithSpaceAtIdx(inputRef, index) {
-  var string = inputRef.current.value;
+var replaceWithSpaceAtIdx = function replaceWithSpaceAtIdx(shadowRef, index) {
+  var string = shadowRef.current.value;
   var firstString = string.substring(0, index);
   var secondString = string.substring(index + 1);
   var newString = firstString + ' ' + secondString;
   return newString;
 };
 
-var insertAtIdx = function insertAtIdx(inputRef, insert) {
-  var string = inputRef.current.value;
-  var index = inputRef.current.selectionEnd;
+var insertAtIdx = function insertAtIdx(shadowRef, insert) {
+  var string = shadowRef.current.value;
+  var index = shadowRef.current.selectionEnd;
   var firstString = string.substring(0, index);
   var secondString = string.substring(index);
   return firstString + insert + secondString;
@@ -290,9 +531,7 @@ var insertAtIdx = function insertAtIdx(inputRef, insert) {
 var deleteAtIdx = function deleteAtIdx(shadowRef) {
   var oldText = shadowRef.current.value;
   var deleteIdx = shadowRef.current.selectionEnd - 1;
-  console.log('deleteIdx', deleteIdx);
   var newText = oldText.substring(0, deleteIdx) + oldText.substring(deleteIdx + 1);
-  console.log(newText);
   return newText;
 };
 
@@ -306,7 +545,6 @@ var updateShadowAndTextEditor = function updateShadowAndTextEditor(_ref) {
       clientWidth = _textEditorRef$curren.clientWidth,
       clientHeight = _textEditorRef$curren.clientHeight;
   var newLineCount = getLineCount(newText, clientWidth);
-  console.log(JSON.stringify(newText));
   textEditorRef.current.innerHTML = generateNewInnerHtml(newText, newLineCount, clientHeight, caretPosition, visualCaretPosition);
   shadowRef.current.selectionEnd = caretPosition;
 };
@@ -343,7 +581,6 @@ var getLineCount = function getLineCount(text, textEditorWidth) {
     }
   }
 
-  console.log(lines);
   return lines;
 };
 

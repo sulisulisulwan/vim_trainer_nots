@@ -10,7 +10,9 @@ main {
 }
 
 .text-editor {
-  border: gray 5px solid;
+  border-left: gray 5px solid;
+  border-top: gray 5px solid;
+  border-right: gray 5px solid;
   padding-top: 7px;
   padding-left: 7px;
   padding-right: 7px;
@@ -30,11 +32,29 @@ main {
   overflow-wrap: break-word;
 }
 
+.text-editor-cli {
+  border-left: silver 5px solid;
+  border-bottom: silver 5px solid;
+  border-right: silver 5px solid;
+  min-height: 30px;
+  background: black;
+  color: white;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 20px;
+}
+
 .shadow-input {
   position: absolute;
   top: 0%;
   right: 0%;
   z-index: 0;
+}
+
+.shadow-CLI {
+  position: absolute;
+  top: 0%;
+  right: 0%;
+  z-index: 5;
 }
 
 .vim-tilda {
@@ -52,4 +72,5 @@ main {
 }
 .caret {
   background-color: white;
+  opacity: 50%;
 }

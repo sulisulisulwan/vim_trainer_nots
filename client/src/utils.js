@@ -1,14 +1,14 @@
-const replaceWithSpaceAtIdx = (inputRef, index) => {
-  let string = inputRef.current.value;
+const replaceWithSpaceAtIdx = (shadowRef, index) => {
+  let string = shadowRef.current.value;
   let firstString = string.substring(0, index)
   let secondString = string.substring(index + 1)
   const newString = firstString + ' ' + secondString;
   return newString;
 }
 
-const insertAtIdx = (inputRef, insert) => {
-  let string = inputRef.current.value;
-  let index = inputRef.current.selectionEnd;
+const insertAtIdx = (shadowRef, insert) => {
+  let string = shadowRef.current.value;
+  let index = shadowRef.current.selectionEnd;
   let firstString = string.substring(0, index);
   let secondString = string.substring(index);
   return firstString + insert + secondString;
@@ -17,16 +17,13 @@ const insertAtIdx = (inputRef, insert) => {
 const deleteAtIdx = (shadowRef) => {
   const oldText = shadowRef.current.value
   const deleteIdx = shadowRef.current.selectionEnd - 1;
-  console.log('deleteIdx', deleteIdx)
   const newText = oldText.substring(0, deleteIdx) + oldText.substring(deleteIdx + 1)
-  console.log(newText)
   return newText;
 }
 
 const updateShadowAndTextEditor = ({ caretPosition, visualCaretPosition, newText, shadowRef, textEditorRef }) => {
   const { clientWidth, clientHeight } = textEditorRef.current;
   const newLineCount = getLineCount(newText, clientWidth)
-  console.log(JSON.stringify(newText))
   textEditorRef.current.innerHTML = generateNewInnerHtml(newText, newLineCount, clientHeight, caretPosition, visualCaretPosition)
   shadowRef.current.selectionEnd = caretPosition;
 }
@@ -60,7 +57,6 @@ const getLineCount = (text, textEditorWidth) => {
       charsInLineCount = 0;
     }
   }
-  console.log(lines);
   return lines;
 }
 
