@@ -185,6 +185,13 @@ var TextEditor = function TextEditor(_ref) {
         e.preventDefault();
         shadowCLI.current.value = '';
         setInsertMode(false);
+        (0,_cliMode_js__WEBPACK_IMPORTED_MODULE_3__.updateCLIShadowAndTextEditor)({
+          caretPosition: 0,
+          visualCaretPosition: -1,
+          newText: '',
+          shadowRef: shadowCLI,
+          textEditorRef: textEditorCLI
+        });
       }
 
       if (e.code === 'Space') {
@@ -223,6 +230,7 @@ var TextEditor = function TextEditor(_ref) {
       } else if (e.code === 'Tab') {
         e.preventDefault();
         changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowTextInput, '  ');
+        shadowTextInput.current.value = changes.newText;
         changes.caretPosition += 2;
         changes.visualCaretPosition += 2;
       } else if (e.code === 'Enter') {
@@ -253,7 +261,14 @@ var TextEditor = function TextEditor(_ref) {
         if (e.key === 'i') {
           e.preventDefault();
           setInsertMode(true);
-          shadowCLI.current.value = '{ INSERT }';
+          shadowCLI.current.value = '-- INSERT --';
+          (0,_cliMode_js__WEBPACK_IMPORTED_MODULE_3__.updateCLIShadowAndTextEditor)({
+            visualCaretPosition: -1,
+            caretPosition: shadowCLI.current.selectionEnd,
+            newText: shadowCLI.current.value,
+            shadowRef: shadowCLI,
+            textEditorRef: textEditorCLI
+          });
           return;
         }
 
@@ -352,7 +367,6 @@ var TextEditor = function TextEditor(_ref) {
       } else if (e.code === 'Backspace') {
         if (shadowCLI.current.selectionEnd === 1) {
           if (shadowCLI.current.value.length === 1) {
-            console.log('here');
             (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.updateShadowAndTextEditor)({
               visualCaretPosition: savedCaretPosition,
               caretPosition: savedCaretPosition,
@@ -431,7 +445,7 @@ var TextEditor = function TextEditor(_ref) {
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
     id: "".concat(editorId, "-cli"),
     ref: textEditorCLI,
-    className: "text-editor-cli"
+    className: "text-editor-cli".concat(insertMode ? ' insert' : '')
   }), textEditorActive ? 'Vim editor active' : 'Inactive');
 };
 

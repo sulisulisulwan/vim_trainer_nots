@@ -64,13 +64,19 @@ const TextEditor = ({ editorId }) => {
     }    
 
 
-
     if (insertMode) {
   
       if (e.code === 'Escape') {
         e.preventDefault();
         shadowCLI.current.value = '';
         setInsertMode(false);
+        updateCLIShadowAndTextEditor({
+          caretPosition: 0,
+          visualCaretPosition: -1,
+          newText: '',
+          shadowRef: shadowCLI,
+          textEditorRef: textEditorCLI
+        })
       }
       if (e.code === 'Space') {
         setSpaceCount(spaceCount + 1)
@@ -102,6 +108,7 @@ const TextEditor = ({ editorId }) => {
       } else if (e.code === 'Tab') {
         e.preventDefault();
         changes.newText = insertAtIdx(shadowTextInput,'  ');
+        shadowTextInput.current.value = changes.newText;
         changes.caretPosition += 2;
         changes.visualCaretPosition += 2;
       } else if (e.code === 'Enter') {
@@ -131,7 +138,14 @@ const TextEditor = ({ editorId }) => {
         if (e.key === 'i') {
           e.preventDefault();
           setInsertMode(true);
-          shadowCLI.current.value = '{ INSERT }'
+          shadowCLI.current.value = '-- INSERT --'
+          updateCLIShadowAndTextEditor({
+            visualCaretPosition: -1,
+            caretPosition: shadowCLI.current.selectionEnd,
+            newText: shadowCLI.current.value,
+            shadowRef: shadowCLI,
+            textEditorRef: textEditorCLI
+          })
           return;
         }
         if (e.key === ':') {
@@ -229,7 +243,6 @@ const TextEditor = ({ editorId }) => {
       } else if (e.code === 'Backspace') {
         if (shadowCLI.current.selectionEnd === 1 ) {
           if (shadowCLI.current.value.length === 1) {
-            console.log('here')
             updateShadowAndTextEditor({
               visualCaretPosition: savedCaretPosition,
               caretPosition: savedCaretPosition,
@@ -303,7 +316,7 @@ const TextEditor = ({ editorId }) => {
         readOnly={!cliMode}
         />
       <div id={editorId} ref={textEditor} className="text-editor" onClick={editorOnClick}></div>
-      <div id={`${editorId}-cli`} ref={textEditorCLI} className="text-editor-cli"></div>
+      <div id={`${editorId}-cli`} ref={textEditorCLI} className={`text-editor-cli${insertMode ? ' insert' : ''}`}></div>
       { textEditorActive ? 'Vim editor active' : 'Inactive'}
     </>
   )

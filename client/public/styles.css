@@ -23,6 +23,7 @@ main {
   background: black;
   color: white;
   caret-color: red; 
+  /* font-family: 'Ubuntu Mono', monospace; */
   font-family: monospace;
   font-size: 20px;
   line-height: 25px;
@@ -39,15 +40,19 @@ main {
   min-height: 30px;
   background: black;
   color: white;
+  /* font-family: 'Ubuntu Mono', monospace; */
   font-family: 'Courier New', Courier, monospace;
   font-size: 20px;
+}
+.insert {
+  font-weight: 900;
 }
 
 .shadow-input {
   position: absolute;
   top: 0%;
   right: 0%;
-  z-index: 2;
+  z-index: 0;
 }
 
 .shadow-CLI {
