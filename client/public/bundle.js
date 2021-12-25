@@ -258,8 +258,9 @@ var TextEditor = function TextEditor(_ref) {
 
     if (!insertMode) {
       if (!cliMode) {
+        e.preventDefault();
+
         if (e.key === 'i') {
-          e.preventDefault();
           setInsertMode(true);
           shadowCLI.current.value = '-- INSERT --';
           (0,_cliMode_js__WEBPACK_IMPORTED_MODULE_3__.updateCLIShadowAndTextEditor)({
@@ -278,9 +279,10 @@ var TextEditor = function TextEditor(_ref) {
           setSavedCaretPosition(shadowTextInput.current.selectionEnd);
           document.getElementById("".concat(editorId, "-shadow-cli")).focus();
           setCLIMode(true);
+          shadowCLI.current.value = ':';
           (0,_cliMode_js__WEBPACK_IMPORTED_MODULE_3__.updateCLIShadowAndTextEditor)({
             visualCaretPosition: shadowCLI.current.selectionEnd + 1,
-            caretPosition: shadowCLI.current.selectionEnd,
+            caretPosition: shadowCLI.current.selectionEnd + 2,
             newText: ':',
             shadowRef: shadowCLI,
             textEditorRef: textEditorCLI
@@ -294,14 +296,18 @@ var TextEditor = function TextEditor(_ref) {
           }
 
           changes.visualCaretPosition -= 1;
+          changes.caretPosition -= 1;
         } else if (e.code === 'ArrowRight') {
           if (shadowTextInput.current.selectionEnd === shadowTextInput.current.value.length) {
             return;
           }
 
+          changes.caretPosition += 1;
           changes.visualCaretPosition += 1;
         }
       }
+
+      console.log(changes);
     }
 
     var targetIndex = shadowTextInput.current.selectionEnd - 1;
@@ -425,8 +431,8 @@ var TextEditor = function TextEditor(_ref) {
     spellCheck: false,
     autoCorrect: "off",
     autoCapitalize: "off",
-    wrap: "off",
-    readOnly: !insertMode
+    wrap: "off" // readOnly={!insertMode}
+
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("textarea", {
     id: "".concat(editorId, "-shadow-cli"),
     ref: shadowCLI,
@@ -472,6 +478,7 @@ var updateCLIShadowAndTextEditor = function updateCLIShadowAndTextEditor(_ref) {
       textEditorRef = _ref.textEditorRef;
   textEditorRef.current.innerHTML = generateCLIInnerHtml(newText, visualCaretPosition);
   shadowRef.current.selectionEnd = caretPosition;
+  shadowRef.current.selectionStart = caretPosition;
 };
 
 var generateCLIInnerHtml = function generateCLIInnerHtml(newestText, visualCaretPosition) {
@@ -577,6 +584,7 @@ var updateShadowAndTextEditor = function updateShadowAndTextEditor(_ref) {
   var newLineCount = getLineCount(newText, clientWidth);
   textEditorRef.current.innerHTML = generateNewInnerHtml(newText, newLineCount, clientHeight, caretPosition, visualCaretPosition);
   shadowRef.current.selectionEnd = caretPosition;
+  shadowRef.current.selectionStart = caretPosition;
 };
 
 var generateTildas = function generateTildas(lineCount, currentHeight, lineHeight) {
@@ -619,7 +627,8 @@ var generateNewInnerHtml = function generateNewInnerHtml(newestText, lineCount, 
 
   for (var i = 0; i < newestText.length; i++) {
     if (i === visualCaretPosition) {
-      newestText[i] === ' ' ? newHtml += "<span class=\"caret\">&nbsp;</span>" : newHtml += "<span class=\"caret\">".concat(newestText[i], "</span>");
+      // newestText[i] === ' ' ? newHtml += `<span class="caret">&nbsp;</span>` : newHtml += `<span class="caret">${newestText[i]}</span>`;
+      newestText[i] === ' ' ? newHtml += "<span class=\"caret\">".concat(newestText[i], "</span>") : newHtml += "<span class=\"caret\">".concat(newestText[i], "</span>");
     } else {
       switch (newestText[i]) {
         case '<':

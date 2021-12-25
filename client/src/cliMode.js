@@ -1,6 +1,7 @@
 const updateCLIShadowAndTextEditor = ({ visualCaretPosition, caretPosition, newText, shadowRef, textEditorRef }) => {
   textEditorRef.current.innerHTML = generateCLIInnerHtml(newText, visualCaretPosition)
   shadowRef.current.selectionEnd = caretPosition;
+  shadowRef.current.selectionStart = caretPosition;
 }
 
 const generateCLIInnerHtml = (newestText, visualCaretPosition) => {

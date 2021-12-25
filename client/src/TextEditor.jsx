@@ -135,8 +135,8 @@ const TextEditor = ({ editorId }) => {
 
     if (!insertMode) {
       if (!cliMode) {
+        e.preventDefault();
         if (e.key === 'i') {
-          e.preventDefault();
           setInsertMode(true);
           shadowCLI.current.value = '-- INSERT --'
           updateCLIShadowAndTextEditor({
@@ -154,9 +154,10 @@ const TextEditor = ({ editorId }) => {
           setSavedCaretPosition(shadowTextInput.current.selectionEnd);
           document.getElementById(`${editorId}-shadow-cli`).focus();
           setCLIMode(true);
+          shadowCLI.current.value = ':'
           updateCLIShadowAndTextEditor({
             visualCaretPosition: shadowCLI.current.selectionEnd + 1,
-            caretPosition: shadowCLI.current.selectionEnd,
+            caretPosition: shadowCLI.current.selectionEnd + 2,
             newText: ':',
             shadowRef: shadowCLI,
             textEditorRef: textEditorCLI
@@ -168,13 +169,16 @@ const TextEditor = ({ editorId }) => {
             return;
           }
           changes.visualCaretPosition -= 1
+          changes.caretPosition -= 1
         } else if (e.code === 'ArrowRight') {
           if (shadowTextInput.current.selectionEnd === shadowTextInput.current.value.length) {
             return;
           }
+          changes.caretPosition += 1
           changes.visualCaretPosition += 1
         }
       }
+      console.log(changes)
 
     }
 
@@ -302,7 +306,7 @@ const TextEditor = ({ editorId }) => {
         autoCorrect='off'
         autoCapitalize='off'
         wrap='off'
-        readOnly={!insertMode}
+        // readOnly={!insertMode}
         />
       <textarea
         id={`${editorId}-shadow-cli`}

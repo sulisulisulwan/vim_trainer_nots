@@ -26,6 +26,7 @@ const updateShadowAndTextEditor = ({ caretPosition, visualCaretPosition, newText
   const newLineCount = getLineCount(newText, clientWidth)
   textEditorRef.current.innerHTML = generateNewInnerHtml(newText, newLineCount, clientHeight, caretPosition, visualCaretPosition)
   shadowRef.current.selectionEnd = caretPosition;
+  shadowRef.current.selectionStart = caretPosition;
 }
 
 
@@ -64,7 +65,8 @@ const generateNewInnerHtml = (newestText, lineCount, textEditorHeight, caretPosi
   let newHtml = '';
   for (let i = 0; i < newestText.length; i++) {
     if (i === visualCaretPosition) {
-      newestText[i] === ' ' ? newHtml += `<span class="caret">&nbsp;</span>` : newHtml += `<span class="caret">${newestText[i]}</span>`;
+      // newestText[i] === ' ' ? newHtml += `<span class="caret">&nbsp;</span>` : newHtml += `<span class="caret">${newestText[i]}</span>`;
+      newestText[i] === ' ' ? newHtml += `<span class="caret">${newestText[i]}</span>` : newHtml += `<span class="caret">${newestText[i]}</span>`;
     } else {
       switch(newestText[i]) {
         case '<': 
