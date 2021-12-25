@@ -37,8 +37,8 @@ const generateTildas = (lineCount, currentHeight, lineHeight) => {
   <br/><span className="vim-tilda">~</span>
   `;
   let tildas = '';
-  let tildaAmount = (currentHeight / lineHeight) - lineCount;
-  for (let i = 0; i < tildaAmount - 1; i += 1) {
+  let tildaAmount = Math.floor((currentHeight / lineHeight) - lineCount)
+  for (let i = 0; i < tildaAmount; i += 1) {
     tildas += tilda;
   }
   return tildas;
@@ -47,12 +47,25 @@ const generateTildas = (lineCount, currentHeight, lineHeight) => {
 const getLineCount = (text, textEditorWidth) => {
   let cpl = Math.floor(textEditorWidth / (20 / 1.64))
   let charCount = text.length === 0 ? 1 : text.length;
-  return Math.ceil(charCount / cpl)
+  let lines = 1;
+  let charsInLineCount = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    if (text[i] === '\n') {
+      lines += 1;
+      continue;
+    }
+    charsInLineCount += 1;
+    if (charsInLineCount === cpl) {
+      lines += 1;
+      charsInLineCount = 0;
+    }
+  }
+  console.log(lines);
+  return lines;
 }
 
 const generateNewInnerHtml = (newestText, lineCount, textEditorHeight, caretPosition, visualCaretPosition) => {
   let newHtml = '';
-  console.log('visual caret position', visualCaretPosition)
   for (let i = 0; i < newestText.length; i++) {
     if (i === visualCaretPosition) {
       newestText[i] === ' ' ? newHtml += `<span class="caret">&nbsp;</span>` : newHtml += `<span class="caret">${newestText[i]}</span>`;
@@ -65,11 +78,10 @@ const generateNewInnerHtml = (newestText, lineCount, textEditorHeight, caretPosi
           newHtml += '&gt' 
           break;
         case '\n': 
-          console.log('this is a new line break')
           newHtml += '<br>' 
           break;
         case '\r':
-          console.log('return break happens here')
+          newHtml += '<br>'
         case ' ': 
           newHtml += '&nbsp;' 
           break;

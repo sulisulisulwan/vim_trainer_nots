@@ -83,6 +83,9 @@ const TextEditor = ({ editorId }) => {
       changes.newText = insertAtIdx(shadowTextInput,'  ');
       changes.caretPosition += 2;
       changes.visualCaretPosition += 2;
+    } else if (e.code === 'Enter') {
+      changes.newText += '\n';
+      changes.visualCaretPosition += 1;
     } else if (e.code === 'Backspace') {
       if (shadowTextInput.current.selectionEnd === 0) {
         return;
@@ -107,25 +110,6 @@ const TextEditor = ({ editorId }) => {
     return;
   }
 
-
-  // const textInputOnChange = (e) => { 
-  //   const changes = {
-  //     caretPosition: shadowTextInput.current.selectionEnd,
-  //     visualCaretPosition: shadowTextInput.current.selectionEnd,
-  //     newText: shadowTextInput.current.value,
-  //     shadowRef: shadowTextInput,
-  //     textEditorRef: textEditor
-  //   };
-
-  //   if (spaceCount >= 1 && twoCharsBefore !== '.') {
-  //     let targetIndex = shadowTextInput.current.selectionEnd - 2;
-  //     if (shadowTextInput.current.value[targetIndex] === '.') {
-  //       changes.newText = replaceWithSpaceAtIdx(shadowTextInput, targetIndex)
-  //     }
-  //   }
-  //   updateShadowAndTextEditor(changes)
-  // }
-
   return (
     <>
       <div id={editorId} ref={textEditor} className="text-editor" onClick={editorOnClick}></div>
@@ -134,10 +118,10 @@ const TextEditor = ({ editorId }) => {
         ref={shadowTextInput}
         className={"shadow-input"}
         onKeyDown={handleSpecialKeys} 
-        // onChange={textInputOnChange}
         spellCheck={false}
         autoCorrect='off'
         autoCapitalize='off'
+        wrap='off'
         />
     </>
   )

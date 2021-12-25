@@ -191,6 +191,9 @@ var TextEditor = function TextEditor(_ref) {
       changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowTextInput, '  ');
       changes.caretPosition += 2;
       changes.visualCaretPosition += 2;
+    } else if (e.code === 'Enter') {
+      changes.newText += '\n';
+      changes.visualCaretPosition += 1;
     } else if (e.code === 'Backspace') {
       if (shadowTextInput.current.selectionEnd === 0) {
         return;
@@ -214,23 +217,7 @@ var TextEditor = function TextEditor(_ref) {
     setTwoCharsBefore(shadowTextInput.current.value[targetIndex]);
     (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.updateShadowAndTextEditor)(changes);
     return;
-  }; // const textInputOnChange = (e) => { 
-  //   const changes = {
-  //     caretPosition: shadowTextInput.current.selectionEnd,
-  //     visualCaretPosition: shadowTextInput.current.selectionEnd,
-  //     newText: shadowTextInput.current.value,
-  //     shadowRef: shadowTextInput,
-  //     textEditorRef: textEditor
-  //   };
-  //   if (spaceCount >= 1 && twoCharsBefore !== '.') {
-  //     let targetIndex = shadowTextInput.current.selectionEnd - 2;
-  //     if (shadowTextInput.current.value[targetIndex] === '.') {
-  //       changes.newText = replaceWithSpaceAtIdx(shadowTextInput, targetIndex)
-  //     }
-  //   }
-  //   updateShadowAndTextEditor(changes)
-  // }
-
+  };
 
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
     id: editorId,
@@ -241,11 +228,11 @@ var TextEditor = function TextEditor(_ref) {
     id: "".concat(editorId, "-shadow-input"),
     ref: shadowTextInput,
     className: "shadow-input",
-    onKeyDown: handleSpecialKeys // onChange={textInputOnChange}
-    ,
+    onKeyDown: handleSpecialKeys,
     spellCheck: false,
     autoCorrect: "off",
-    autoCapitalize: "off"
+    autoCapitalize: "off",
+    wrap: "off"
   }));
 };
 
@@ -327,9 +314,9 @@ var updateShadowAndTextEditor = function updateShadowAndTextEditor(_ref) {
 var generateTildas = function generateTildas(lineCount, currentHeight, lineHeight) {
   var tilda = "\n  <br/><span className=\"vim-tilda\">~</span>\n  ";
   var tildas = '';
-  var tildaAmount = currentHeight / lineHeight - lineCount;
+  var tildaAmount = Math.floor(currentHeight / lineHeight - lineCount);
 
-  for (var i = 0; i < tildaAmount - 1; i += 1) {
+  for (var i = 0; i < tildaAmount; i += 1) {
     tildas += tilda;
   }
 
@@ -339,12 +326,29 @@ var generateTildas = function generateTildas(lineCount, currentHeight, lineHeigh
 var getLineCount = function getLineCount(text, textEditorWidth) {
   var cpl = Math.floor(textEditorWidth / (20 / 1.64));
   var charCount = text.length === 0 ? 1 : text.length;
-  return Math.ceil(charCount / cpl);
+  var lines = 1;
+  var charsInLineCount = 0;
+
+  for (var i = 0; i < text.length; i += 1) {
+    if (text[i] === '\n') {
+      lines += 1;
+      continue;
+    }
+
+    charsInLineCount += 1;
+
+    if (charsInLineCount === cpl) {
+      lines += 1;
+      charsInLineCount = 0;
+    }
+  }
+
+  console.log(lines);
+  return lines;
 };
 
 var generateNewInnerHtml = function generateNewInnerHtml(newestText, lineCount, textEditorHeight, caretPosition, visualCaretPosition) {
   var newHtml = '';
-  console.log('visual caret position', visualCaretPosition);
 
   for (var i = 0; i < newestText.length; i++) {
     if (i === visualCaretPosition) {
@@ -360,12 +364,11 @@ var generateNewInnerHtml = function generateNewInnerHtml(newestText, lineCount, 
           break;
 
         case '\n':
-          console.log('this is a new line break');
           newHtml += '<br>';
           break;
 
         case '\r':
-          console.log('return break happens here');
+          newHtml += '<br>';
 
         case ' ':
           newHtml += '&nbsp;';
