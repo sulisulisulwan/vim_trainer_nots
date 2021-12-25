@@ -13,6 +13,7 @@ const TextEditor = ({ editorId }) => {
   const [editorDimensions, setEditorDimensions] = useState(null);
   const [spaceCount, setSpaceCount] = useState(0);
   const [twoCharsBefore, setTwoCharsBefore] = useState('');
+  const [savedCaretPosition, setSavedCaretPosition] = useState(0);
   const textEditor = useRef(null)
   const textEditorCLI = useRef(null)
   const shadowTextInput = useRef(null)
@@ -134,6 +135,9 @@ const TextEditor = ({ editorId }) => {
           return;
         }
         if (e.key === ':') {
+          changes.visualCaretPosition = -1;
+          updateShadowAndTextEditor(changes)
+          setSavedCaretPosition(shadowTextInput.current.selectionEnd);
           document.getElementById(`${editorId}-shadow-cli`).focus();
           setCLIMode(true);
           updateCLIShadowAndTextEditor({
@@ -216,6 +220,7 @@ const TextEditor = ({ editorId }) => {
       } else if (e.code === 'Tab') {
         e.preventDefault();
         changes.newText = insertAtIdx(shadowCLI,'  ');
+        shadowCLI.current.value = changes.newText;
         changes.caretPosition += 2;
         changes.visualCaretPosition += 2;
       } else if (e.code === 'Enter') {
@@ -224,6 +229,14 @@ const TextEditor = ({ editorId }) => {
       } else if (e.code === 'Backspace') {
         if (shadowCLI.current.selectionEnd === 1 ) {
           if (shadowCLI.current.value.length === 1) {
+            console.log('here')
+            updateShadowAndTextEditor({
+              visualCaretPosition: savedCaretPosition,
+              caretPosition: savedCaretPosition,
+              newText: shadowTextInput.current.value,
+              shadowRef: shadowTextInput,
+              textEditorRef: textEditor
+            })
             setCLIMode(false);
             shadowCLI.current.value = '';
             updateCLIShadowAndTextEditor({
@@ -237,7 +250,6 @@ const TextEditor = ({ editorId }) => {
             document.getElementById(`${editorId}-shadow-input`).focus();
             return;
           } else {
-            console.log(shadowCLI.current.value)
             shadowCLI.current.value = ':' + shadowCLI.current.value;
             shadowCLI.current.selectionEnd = 2
             return;

@@ -131,6 +131,11 @@ var TextEditor = function TextEditor(_ref) {
       twoCharsBefore = _useState16[0],
       setTwoCharsBefore = _useState16[1];
 
+  var _useState17 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0),
+      _useState18 = _slicedToArray(_useState17, 2),
+      savedCaretPosition = _useState18[0],
+      setSavedCaretPosition = _useState18[1];
+
   var textEditor = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var textEditorCLI = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var shadowTextInput = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
@@ -253,6 +258,9 @@ var TextEditor = function TextEditor(_ref) {
         }
 
         if (e.key === ':') {
+          changes.visualCaretPosition = -1;
+          (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.updateShadowAndTextEditor)(changes);
+          setSavedCaretPosition(shadowTextInput.current.selectionEnd);
           document.getElementById("".concat(editorId, "-shadow-cli")).focus();
           setCLIMode(true);
           (0,_cliMode_js__WEBPACK_IMPORTED_MODULE_3__.updateCLIShadowAndTextEditor)({
@@ -335,6 +343,7 @@ var TextEditor = function TextEditor(_ref) {
       } else if (e.code === 'Tab') {
         e.preventDefault();
         changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowCLI, '  ');
+        shadowCLI.current.value = changes.newText;
         changes.caretPosition += 2;
         changes.visualCaretPosition += 2;
       } else if (e.code === 'Enter') {
@@ -343,6 +352,14 @@ var TextEditor = function TextEditor(_ref) {
       } else if (e.code === 'Backspace') {
         if (shadowCLI.current.selectionEnd === 1) {
           if (shadowCLI.current.value.length === 1) {
+            console.log('here');
+            (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.updateShadowAndTextEditor)({
+              visualCaretPosition: savedCaretPosition,
+              caretPosition: savedCaretPosition,
+              newText: shadowTextInput.current.value,
+              shadowRef: shadowTextInput,
+              textEditorRef: textEditor
+            });
             setCLIMode(false);
             shadowCLI.current.value = '';
             (0,_cliMode_js__WEBPACK_IMPORTED_MODULE_3__.updateCLIShadowAndTextEditor)({
@@ -356,7 +373,6 @@ var TextEditor = function TextEditor(_ref) {
             document.getElementById("".concat(editorId, "-shadow-input")).focus();
             return;
           } else {
-            console.log(shadowCLI.current.value);
             shadowCLI.current.value = ':' + shadowCLI.current.value;
             shadowCLI.current.selectionEnd = 2;
             return;
@@ -617,7 +633,7 @@ var generateNewInnerHtml = function generateNewInnerHtml(newestText, lineCount, 
     }
   }
 
-  if (visualCaretPosition === newestText.length) {
+  if (visualCaretPosition !== -1 && !newestText.length || visualCaretPosition === newestText.length) {
     newHtml += "<span class=\"caret\">&nbsp;</span>";
   }
 

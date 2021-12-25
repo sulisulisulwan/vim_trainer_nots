@@ -86,7 +86,7 @@ const generateNewInnerHtml = (newestText, lineCount, textEditorHeight, caretPosi
       }
     }
   }
-  if (visualCaretPosition === newestText.length) {
+  if ((visualCaretPosition !== -1 && !newestText.length) || visualCaretPosition === newestText.length) {
     newHtml += `<span class="caret">&nbsp;</span>`;
   }
   let tildas = generateTildas(lineCount, textEditorHeight, 25)
