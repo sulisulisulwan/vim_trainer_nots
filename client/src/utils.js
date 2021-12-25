@@ -2,7 +2,8 @@ const replaceWithSpaceAtIdx = (inputRef, index) => {
   let string = inputRef.current.value;
   let firstString = string.substring(0, index)
   let secondString = string.substring(index + 1)
-  return firstString + ' ' + secondString;
+  const newString = firstString + ' ' + secondString;
+  return newString;
 }
 
 const insertAtIdx = (inputRef, insert) => {
@@ -13,13 +14,21 @@ const insertAtIdx = (inputRef, insert) => {
   return firstString + insert + secondString;
 }
 
-const updateShadowAndTextEditor = (newText, cursorOffset, shadowRef, textEditorRef) => {
-  const targetIndex = shadowRef.current.selectionEnd;
-  shadowRef.current.value = newText;
+const deleteAtIdx = (shadowRef) => {
+  const oldText = shadowRef.current.value
+  const deleteIdx = shadowRef.current.selectionEnd - 1;
+  console.log('deleteIdx', deleteIdx)
+  const newText = oldText.substring(0, deleteIdx) + oldText.substring(deleteIdx + 1)
+  console.log(newText)
+  return newText;
+}
+
+const updateShadowAndTextEditor = ({ caretPosition, visualCaretPosition, newText, shadowRef, textEditorRef }) => {
   const { clientWidth, clientHeight } = textEditorRef.current;
   const newLineCount = getLineCount(newText, clientWidth)
-  textEditorRef.current.innerHTML = generateNewInnerHtml(newText, newLineCount, clientHeight, targetIndex + cursorOffset)
-  shadowRef.current.selectionEnd = targetIndex + cursorOffset;
+  console.log(JSON.stringify(newText))
+  textEditorRef.current.innerHTML = generateNewInnerHtml(newText, newLineCount, clientHeight, caretPosition, visualCaretPosition)
+  shadowRef.current.selectionEnd = caretPosition;
 }
 
 
@@ -41,21 +50,42 @@ const getLineCount = (text, textEditorWidth) => {
   return Math.ceil(charCount / cpl)
 }
 
-const generateNewInnerHtml = (newestText, lineCount, textEditorHeight, caretPosition) => {
+const generateNewInnerHtml = (newestText, lineCount, textEditorHeight, caretPosition, visualCaretPosition) => {
   let newHtml = '';
+  console.log('visual caret position', visualCaretPosition)
   for (let i = 0; i < newestText.length; i++) {
-    i === caretPosition ? newHtml += `<span class="caret">${newestText[i]}</span>`
-      : newestText[i] === '\n' ? newHtml += '<br>'
-      : newestText[i] === ' ' ? newHtml += '&nbsp;'
-      : newHtml += newestText[i];
+    if (i === visualCaretPosition) {
+      newestText[i] === ' ' ? newHtml += `<span class="caret">&nbsp;</span>` : newHtml += `<span class="caret">${newestText[i]}</span>`;
+    } else {
+      switch(newestText[i]) {
+        case '<': 
+          newHtml += '&lt' 
+          break;
+        case '>': 
+          newHtml += '&gt' 
+          break;
+        case '\n': 
+          console.log('this is a new line break')
+          newHtml += '<br>' 
+          break;
+        case '\r':
+          console.log('return break happens here')
+        case ' ': 
+          newHtml += '&nbsp;' 
+          break;
+        default: 
+          newHtml += newestText[i] 
+      }
+    }
   }
-  if (caretPosition === newestText.length) {
+  if (visualCaretPosition === newestText.length) {
     newHtml += `<span class="caret">&nbsp;</span>`;
   }
   let tildas = generateTildas(lineCount, textEditorHeight, 25)
   return newHtml += tildas;
 }
 export {
+  deleteAtIdx,
   replaceWithSpaceAtIdx,
   generateTildas,
   generateNewInnerHtml,

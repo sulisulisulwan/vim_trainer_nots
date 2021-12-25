@@ -89,20 +89,30 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 var TextEditor = function TextEditor(_ref) {
   var editorId = _ref.editorId;
 
-  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
       _useState2 = _slicedToArray(_useState, 2),
-      editorDimensions = _useState2[0],
-      setEditorDimensions = _useState2[1];
+      keyStrokeHist = _useState2[0],
+      setKeyStrokeHist = _useState2[1];
 
-  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0),
+  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false),
       _useState4 = _slicedToArray(_useState3, 2),
-      spaceCount = _useState4[0],
-      setSpaceCount = _useState4[1];
+      spacedNextToPeriod = _useState4[0],
+      setSpacedNextToPeriod = _useState4[1];
 
-  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
       _useState6 = _slicedToArray(_useState5, 2),
-      twoCharsBefore = _useState6[0],
-      setTwoCharsBefore = _useState6[1];
+      editorDimensions = _useState6[0],
+      setEditorDimensions = _useState6[1];
+
+  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0),
+      _useState8 = _slicedToArray(_useState7, 2),
+      spaceCount = _useState8[0],
+      setSpaceCount = _useState8[1];
+
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(''),
+      _useState10 = _slicedToArray(_useState9, 2),
+      twoCharsBefore = _useState10[0],
+      setTwoCharsBefore = _useState10[1];
 
   var textEditor = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
   var shadowTextInput = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(null);
@@ -116,14 +126,15 @@ var TextEditor = function TextEditor(_ref) {
     }, false);
   }, []);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
-    var _shadowTextInput$curr = shadowTextInput.current,
-        value = _shadowTextInput$curr.value,
-        selectionEnd = _shadowTextInput$curr.selectionEnd;
-    var _textEditor$current = textEditor.current,
-        clientWidth = _textEditor$current.clientWidth,
-        clientHeight = _textEditor$current.clientHeight;
-    var newLineCount = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.getLineCount)(value, clientWidth);
-    textEditor.current.innerHTML = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.generateNewInnerHtml)(value, newLineCount, clientHeight, selectionEnd);
+    var text = shadowTextInput.current.value;
+    var changes = {
+      caretPosition: shadowTextInput.current.selectionEnd,
+      visualCaretPosition: shadowTextInput.current.selectionEnd,
+      newText: text,
+      shadowRef: shadowTextInput,
+      textEditorRef: textEditor
+    };
+    (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.updateShadowAndTextEditor)(changes);
   }, [editorDimensions]);
 
   var editorOnClick = function editorOnClick(e) {
@@ -132,38 +143,94 @@ var TextEditor = function TextEditor(_ref) {
   };
 
   var handleSpecialKeys = function handleSpecialKeys(e) {
-    var targetIndex = shadowTextInput.current.selectionEnd - 1;
-    setTwoCharsBefore(shadowTextInput.current.value[targetIndex]);
-
-    if (e.code === 'Tab') {
-      e.preventDefault();
-      var textWithTab = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowTextInput, '  ');
-      (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.updateShadowAndTextEditor)(textWithTab, 2, shadowTextInput, textEditor);
-    }
+    var newKeyHistory = keyStrokeHist.slice();
+    newKeyHistory.push(e.code);
+    var changes = {
+      caretPosition: shadowTextInput.current.selectionEnd,
+      visualCaretPosition: shadowTextInput.current.selectionEnd,
+      newText: shadowTextInput.current.value,
+      shadowRef: shadowTextInput,
+      textEditorRef: textEditor
+    };
 
     if (e.code === 'Space') {
       setSpaceCount(spaceCount + 1);
+      changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowTextInput, e.key);
+      changes.visualCaretPosition += 1;
+
+      if (changes.newText[changes.caretPosition - 1] === '.') {
+        setSpacedNextToPeriod(true);
+      }
+
+      if (spaceCount >= 1 && twoCharsBefore !== '.' && !spacedNextToPeriod) {
+        var _targetIndex = shadowTextInput.current.selectionEnd - 2;
+
+        if (shadowTextInput.current.value[_targetIndex] === '.') {
+          changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.replaceWithSpaceAtIdx)(shadowTextInput, _targetIndex);
+          changes.visualCaretPosition -= 1;
+          shadowTextInput.current.value = changes.newText;
+        }
+      }
+
+      (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.updateShadowAndTextEditor)(changes);
       return;
-    }
+    } else if (e.code === 'ArrowLeft') {
+      if (shadowTextInput.current.selectionEnd === 0) {
+        return;
+      }
 
-    if (spaceCount) {
-      setSpaceCount(0);
-    }
-  };
+      changes.visualCaretPosition -= 1;
+    } else if (e.code === 'ArrowRight') {
+      if (shadowTextInput.current.selectionEnd === shadowTextInput.current.value.length) {
+        return;
+      }
 
-  var textInputOnChange = function textInputOnChange(e) {
-    var newText = shadowTextInput.current.value;
+      changes.visualCaretPosition += 1;
+    } else if (e.code === 'Tab') {
+      e.preventDefault();
+      changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowTextInput, '  ');
+      changes.caretPosition += 2;
+      changes.visualCaretPosition += 2;
+    } else if (e.code === 'Backspace') {
+      if (shadowTextInput.current.selectionEnd === 0) {
+        return;
+      }
 
-    if (spaceCount >= 1 && twoCharsBefore !== '.') {
-      var targetIndex = shadowTextInput.current.selectionEnd - 2;
-
-      if (shadowTextInput.current.value[targetIndex] === '.') {
-        newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.replaceWithSpaceAtIdx)(shadowTextInput, targetIndex);
+      changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.deleteAtIdx)(shadowTextInput);
+      changes.visualCaretPosition -= 1;
+    } else {
+      if (e.key.length === 1) {
+        changes.newText = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.insertAtIdx)(shadowTextInput, e.key);
+        changes.visualCaretPosition += 1;
       }
     }
 
-    (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.updateShadowAndTextEditor)(newText, 0, shadowTextInput, textEditor);
-  };
+    if (spaceCount) {
+      setSpacedNextToPeriod(false);
+      setSpaceCount(0);
+    }
+
+    var targetIndex = shadowTextInput.current.selectionEnd - 1;
+    setTwoCharsBefore(shadowTextInput.current.value[targetIndex]);
+    (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.updateShadowAndTextEditor)(changes);
+    return;
+  }; // const textInputOnChange = (e) => { 
+  //   const changes = {
+  //     caretPosition: shadowTextInput.current.selectionEnd,
+  //     visualCaretPosition: shadowTextInput.current.selectionEnd,
+  //     newText: shadowTextInput.current.value,
+  //     shadowRef: shadowTextInput,
+  //     textEditorRef: textEditor
+  //   };
+  //   if (spaceCount >= 1 && twoCharsBefore !== '.') {
+  //     let targetIndex = shadowTextInput.current.selectionEnd - 2;
+  //     if (shadowTextInput.current.value[targetIndex] === '.') {
+  //       changes.newText = replaceWithSpaceAtIdx(shadowTextInput, targetIndex)
+  //     }
+  //   }
+  //   updateShadowAndTextEditor(changes)
+  // }
+
 
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", {
     id: editorId,
@@ -174,8 +241,8 @@ var TextEditor = function TextEditor(_ref) {
     id: "".concat(editorId, "-shadow-input"),
     ref: shadowTextInput,
     className: "shadow-input",
-    onKeyDown: handleSpecialKeys,
-    onChange: textInputOnChange,
+    onKeyDown: handleSpecialKeys // onChange={textInputOnChange}
+    ,
     spellCheck: false,
     autoCorrect: "off",
     autoCapitalize: "off"
@@ -209,6 +276,7 @@ var tildas = "\n<br/><span className=\"vim-tilda\">~</span>\n";
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "deleteAtIdx": () => (/* binding */ deleteAtIdx),
 /* harmony export */   "replaceWithSpaceAtIdx": () => (/* binding */ replaceWithSpaceAtIdx),
 /* harmony export */   "generateTildas": () => (/* binding */ generateTildas),
 /* harmony export */   "generateNewInnerHtml": () => (/* binding */ generateNewInnerHtml),
@@ -220,7 +288,8 @@ var replaceWithSpaceAtIdx = function replaceWithSpaceAtIdx(inputRef, index) {
   var string = inputRef.current.value;
   var firstString = string.substring(0, index);
   var secondString = string.substring(index + 1);
-  return firstString + ' ' + secondString;
+  var newString = firstString + ' ' + secondString;
+  return newString;
 };
 
 var insertAtIdx = function insertAtIdx(inputRef, insert) {
@@ -231,15 +300,28 @@ var insertAtIdx = function insertAtIdx(inputRef, insert) {
   return firstString + insert + secondString;
 };
 
-var updateShadowAndTextEditor = function updateShadowAndTextEditor(newText, cursorOffset, shadowRef, textEditorRef) {
-  var targetIndex = shadowRef.current.selectionEnd;
-  shadowRef.current.value = newText;
+var deleteAtIdx = function deleteAtIdx(shadowRef) {
+  var oldText = shadowRef.current.value;
+  var deleteIdx = shadowRef.current.selectionEnd - 1;
+  console.log('deleteIdx', deleteIdx);
+  var newText = oldText.substring(0, deleteIdx) + oldText.substring(deleteIdx + 1);
+  console.log(newText);
+  return newText;
+};
+
+var updateShadowAndTextEditor = function updateShadowAndTextEditor(_ref) {
+  var caretPosition = _ref.caretPosition,
+      visualCaretPosition = _ref.visualCaretPosition,
+      newText = _ref.newText,
+      shadowRef = _ref.shadowRef,
+      textEditorRef = _ref.textEditorRef;
   var _textEditorRef$curren = textEditorRef.current,
       clientWidth = _textEditorRef$curren.clientWidth,
       clientHeight = _textEditorRef$curren.clientHeight;
   var newLineCount = getLineCount(newText, clientWidth);
-  textEditorRef.current.innerHTML = generateNewInnerHtml(newText, newLineCount, clientHeight, targetIndex + cursorOffset);
-  shadowRef.current.selectionEnd = targetIndex + cursorOffset;
+  console.log(JSON.stringify(newText));
+  textEditorRef.current.innerHTML = generateNewInnerHtml(newText, newLineCount, clientHeight, caretPosition, visualCaretPosition);
+  shadowRef.current.selectionEnd = caretPosition;
 };
 
 var generateTildas = function generateTildas(lineCount, currentHeight, lineHeight) {
@@ -260,14 +342,42 @@ var getLineCount = function getLineCount(text, textEditorWidth) {
   return Math.ceil(charCount / cpl);
 };
 
-var generateNewInnerHtml = function generateNewInnerHtml(newestText, lineCount, textEditorHeight, caretPosition) {
+var generateNewInnerHtml = function generateNewInnerHtml(newestText, lineCount, textEditorHeight, caretPosition, visualCaretPosition) {
   var newHtml = '';
+  console.log('visual caret position', visualCaretPosition);
 
   for (var i = 0; i < newestText.length; i++) {
-    i === caretPosition ? newHtml += "<span class=\"caret\">".concat(newestText[i], "</span>") : newestText[i] === '\n' ? newHtml += '<br>' : newestText[i] === ' ' ? newHtml += '&nbsp;' : newHtml += newestText[i];
+    if (i === visualCaretPosition) {
+      newestText[i] === ' ' ? newHtml += "<span class=\"caret\">&nbsp;</span>" : newHtml += "<span class=\"caret\">".concat(newestText[i], "</span>");
+    } else {
+      switch (newestText[i]) {
+        case '<':
+          newHtml += '&lt';
+          break;
+
+        case '>':
+          newHtml += '&gt';
+          break;
+
+        case '\n':
+          console.log('this is a new line break');
+          newHtml += '<br>';
+          break;
+
+        case '\r':
+          console.log('return break happens here');
+
+        case ' ':
+          newHtml += '&nbsp;';
+          break;
+
+        default:
+          newHtml += newestText[i];
+      }
+    }
   }
 
-  if (caretPosition === newestText.length) {
+  if (visualCaretPosition === newestText.length) {
     newHtml += "<span class=\"caret\">&nbsp;</span>";
   }
 
